@@ -29,10 +29,88 @@ import csv
 El controlador se encarga de mediar entre la vista y el modelo.
 """
 
-# Inicialización del Catálogo de libros
+# Inicialización del Catálogo de obras y artistas
+
+def initCatalog():
+    """""
+    Llama la función de inicialización del catalogo del modelo.
+    """
+    catalog = model.newCatalog()
+    return catalog
+
 
 # Funciones para la carga de datos
 
+def loadData(catalog):
+    """""
+    Carga los datos de los archivos y cargar los datos en la
+    estructura de datos
+    """
+    loadArtists(catalog)
+    loadArtworks(catalog)
+
+
+def loadArtists(catalog):
+    """
+    Carga los artistas del archivo.
+    """
+    artistsfile = cf.data_dir + 'Artists-utf8-small.csv'
+    input_file = csv.DictReader(open(artistsfile, encoding='utf-8'))
+    for artist in input_file:
+        model.addArtist(catalog, artist)
+
+
+def loadArtworks(catalog):
+    """
+    Carga las obras del archivo.
+    """
+    artworksfile = cf.data_dir + 'Artworks-utf8-small.csv'
+    input_file = csv.DictReader(open(artworksfile, encoding='utf-8'))
+    for artwork in input_file:
+        model.addArtwork(catalog, artwork)
+
+
 # Funciones de ordenamiento
 
+def sortArtistsByBeginDate(catalog, year1, year2):
+    
+    artistsInRange = model.getArtistsInDateRange(catalog, year1, year2)
+    sortedResult = model.sortArtists(artistsInRange)
+    return sortedResult
+
+def sortArtworksByBeginDate(catalog, year1, year2):
+    
+    artworksInRange = model.getArtworksInDateRange(catalog, year1, year2)
+    purchasedAmount = model.purchasedAmount(artworksInRange)
+    sortedResult = model.sortArtworks(artworksInRange)
+    return sortedResult,purchasedAmount
+    
+
+def sortCountries(catalog):
+
+    countries = catalog['nationalities']
+    sortedResult = model.sortCountries(countries)
+    return sortedResult
+
+def sortArtworksByDeparment(catalog, department):
+
+    artowrksInDeptResult = model.getArtworksInDeparment(catalog, department)
+    artworksInDept = artowrksInDeptResult[0]
+    sortedResultByDate = model.sortArtworksInDeptByDate(artworksInDept)
+    sortedResultByTransportCost = model.sortArtworksInDeptByTransportCost(artworksInDept)
+    return artowrksInDeptResult, sortedResultByDate, sortedResultByTransportCost
+
+def sortArtworksByTechnique(catalog, technique):
+    artworksByTechResult = model.getArtworksByTechnique
+
+
 # Funciones de consulta sobre el catálogo
+
+def searchArtistByID(catalog, constituentids):
+    return model.searchArtistByID(catalog, constituentids)
+
+def getArtworksByMedium(catalog, medio):
+
+    artworksByMedium = model.getArtworksByMedium(catalog, medio)
+    sortedResult = model.sortArtworks(artworksByMedium)
+    return sortedResult
