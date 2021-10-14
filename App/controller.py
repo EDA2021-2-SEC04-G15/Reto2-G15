@@ -54,7 +54,7 @@ def loadArtists(catalog):
     """
     Carga los artistas del archivo.
     """
-    artistsfile = cf.data_dir + 'Artists-utf8-small.csv'
+    artistsfile = cf.data_dir + 'Artists-utf8-30pct.csv'
     input_file = csv.DictReader(open(artistsfile, encoding='utf-8'))
     for artist in input_file:
         model.addArtist(catalog, artist)
@@ -64,7 +64,7 @@ def loadArtworks(catalog):
     """
     Carga las obras del archivo.
     """
-    artworksfile = cf.data_dir + 'Artworks-utf8-small.csv'
+    artworksfile = cf.data_dir + 'Artworks-utf8-30pct.csv'
     input_file = csv.DictReader(open(artworksfile, encoding='utf-8'))
     for artwork in input_file:
         model.addArtwork(catalog, artwork)
@@ -114,3 +114,10 @@ def getArtworksByMedium(catalog, medio):
     artworksByMedium = model.getArtworksByMedium(catalog, medio)
     sortedResult = model.sortArtworks(artworksByMedium)
     return sortedResult
+
+def getNumberByNationality(catalog, nacinalidad):
+
+    result = model.getArtworksByNationality(catalog, nacinalidad)
+    return result
+    
+

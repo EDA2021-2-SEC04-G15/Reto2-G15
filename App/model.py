@@ -56,7 +56,6 @@ def newCatalog():
     
     catalog['artists'] = lt.newList('ARRAY_LIST')
     catalog['artworks'] = lt.newList('ARRAY_LIST')
-    catalog['nationalities'] = lt.newList('ARRAY_LIST')
 
 
     ### funciones de creación de mapas #####
@@ -64,10 +63,15 @@ def newCatalog():
     """
     Este indice crea un map cuya llave es la tecnica de la obra
     """
-    catalog['tecnicas'] = mp.newMap(300,
+    catalog['tecnicas'] = mp.newMap(5000,
                                  maptype='PROBING',
                                  loadfactor=0.5,
                                  comparefunction=compareMapMedium)
+
+    catalog['nationality'] = mp.newMap(100,
+                                 maptype='PROBING',
+                                 loadfactor=0.5,
+                                 comparefunction=compareMapNationality)
 
     return catalog
 
@@ -80,9 +84,10 @@ def addArtist(catalog, artist):
 def addArtwork(catalog, artwork):
     # Se agrega una obra a la lista de obras
     lt.addLast(catalog['artworks'], artwork)
-    # se añaden los detalles de la obra a la lista de nacionalidades
-    addArtworkNationlities(catalog, artwork)
 
+    # se añaden los detalles de la obra al MAPA de nacionalidades
+    addArtworkNationlities(catalog, artwork)
+    
     # se añade la informacion al mapa de mediums
 
     addArtworkMedium(catalog, artwork)
@@ -129,35 +134,32 @@ def addArtworkNationlities(catalog, artwork):
 # Funciones para creacion de datos
 
 def addNationality(catalog, artwork, artist):
-    nationality = artist['Nationality']
-    if nationality == "":
-        nationality = "Nationality unknown"
-    nationalities = catalog['nationalities']
-    encontro = False
-    for country in lt.iterator(nationalities):
-        compare = country['name']
-        if compare == nationality:
-            lt.addLast(country['artworks'], artwork)
-            country['size'] +=1
-            encontro = True
-    
-    if encontro == False:
-        country2 = newNationlity(nationality)
-        artworks2 = country2['artworks']
-        lt.addLast(artworks2, artwork)
-        country2['size'] +=1
-        encontro = True
-        lt.addLast(nationalities, country2)
+    try:
+        nationalities = catalog['nationality']
+        if (artist['Nationality'] != ''):
+            pubnationality = (artist['Nationality'])
+        else:
+            pubnationality = 'unknown'
+        existnationality = mp.contains(nationalities, pubnationality)
+        if existnationality:
+            entry = mp.get(nationalities, pubnationality)
+            nationality = me.getValue(entry)
+        else:
+            nationality = newNationlity(pubnationality)
+            mp.put(nationalities, pubnationality, nationality)
+        lt.addLast(nationality['artworks'], artwork)
+    except Exception:
+        return None
 
 
-def newNationlity(nationality):
+def newNationlity(pubnationality):
     """
     Crea una nueva estructura para almacenar las obras de una nacionalidad
     """
-    country = {'name': "", "artworks": None, "size" : 0 }
-    country['name'] = nationality
-    country['artworks'] = lt.newList('ARRAY_LIST')
-    return country
+    entry ={'nationality':'', 'artworks':None}
+    entry['nationality'] = pubnationality
+    entry['artworks'] = lt.newList('ARRAY_LIST')
+    return entry
 
 
 # Funciones de consulta
@@ -170,6 +172,15 @@ def getArtworksByMedium(catalog, medium):
     medium = mp.get(catalog['tecnicas'], medium)
     if medium:
         return me.getValue(medium)['artworks']
+    return None
+
+def getArtworksByNationality(catalog, nationality):
+
+    nationality = mp.get(catalog['nationality'], nationality)
+    if nationality:
+        artworks = me.getValue(nationality)['artworks']
+        size = lt.size(artworks)
+        return size
     return None
 
 
@@ -440,6 +451,15 @@ def sortArtworksByTechnique(artworksByTech):
 
 
 def compareMapMedium(id, tag):
+    tagentry = me.getKey(tag)
+    if (id == tagentry):
+        return 0
+    elif (id > tagentry):
+        return 1
+    else:
+        return 0
+
+def compareMapNationality(id, tag):
     tagentry = me.getKey(tag)
     if (id == tagentry):
         return 0

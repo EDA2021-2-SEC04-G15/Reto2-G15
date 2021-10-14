@@ -20,11 +20,13 @@
  * along withthis program.  If not, see <http://www.gnu.org/licenses/>.
  """
 
+import time
 import config as cf
 import sys
 import controller
 from DISClib.ADT import list as lt
 assert cf
+
 
 import sys
 ...
@@ -48,6 +50,7 @@ def printMenu():
     print("6- Calcular costo de transporte de obras según departamento")
     print("7- Mostrar nueva exposición")
     print("8- MOSTRAR OBRAS MAS ANTIGUAS DE UNA TECNICA")
+    print("9- NUMERO DE OBRAS SEGUN NACIONALIDAD")
     print("0- Salir")
 
 
@@ -270,6 +273,7 @@ while True:
     inputs = input('Seleccione una opción para continuar\n')
     if int(inputs[0]) == 1:
         print("\nCargando información de los archivos ....\n")
+        start_time = time.process_time()
         catalog = initCatalog()
         loadData(catalog)
         sizeArtist = lt.size(catalog['artists'])
@@ -279,6 +283,10 @@ while True:
     
 
         print('Obras cargadas: ' + str(sizeArtworks) + '\n')
+
+        stop_time = time.process_time()
+        elapsed_time_mseg = (stop_time - start_time)*1000
+        print ("\ntiempo: "+ str(elapsed_time_mseg))
 
     elif int(inputs[0]) == 2:
         
@@ -350,6 +358,14 @@ while True:
         numobras = int(input("NUmero de obras a mostrar: "))
         obras = controller.getArtworksByMedium(catalog, medio)
         printArtworksByMedium(obras[1], numobras)
+
+
+    elif int(inputs[0]) == 9:
+        nacinalidad = input("Nacionalidad a buscar: ")
+        resultado = controller.getNumberByNationality(catalog, nacinalidad)
+        print("\n numero de obras: " + str(resultado))
+
+
 
     else:
         sys.exit(0)
