@@ -50,6 +50,8 @@ def newCatalog():
     """
     catalog = {'artists': None,
                'artworks': None,
+               'artistID':None,
+               'years':None,
                'nationalities': None,
                'tecnicas' : None}
 
@@ -73,6 +75,16 @@ def newCatalog():
                                  loadfactor=0.5,
                                  comparefunction=compareMapNationality)
 
+    catalog['years'] = mp.newMap(2500,
+                                 maptype='PROBING',
+                                 loadfactor=0.5,
+                                 comparefunction=compareMapYears)
+
+    catalog['artistID'] = mp.newMap(2000,
+                                 maptype='PROBING',
+                                 loadfactor=0.5,
+                                 comparefunction=compareMapIDs)
+
     return catalog
 
 # Funciones para agregar informacion al catalogo
@@ -80,6 +92,12 @@ def newCatalog():
 def addArtist(catalog, artist):
     # Se adiciona el artista a la lista de artistas
     lt.addLast(catalog['artists'], artist)
+
+    #Se añade el ID del artista al MAPA de ids
+    addArtistID(catalog, artist)
+
+    # Se añade la informacion del artista al MAPA de años
+    addArtistYears(catalog, artist)
    
 def addArtwork(catalog, artwork):
     # Se agrega una obra a la lista de obras
@@ -92,6 +110,58 @@ def addArtwork(catalog, artwork):
 
     addArtworkMedium(catalog, artwork)
 
+def addArtistID(catalog, artist):
+
+    try:
+        IDs = catalog['artistID']
+        if (artist['ConstituentID'] != ''):
+            pubID = (artist['ConstituentID'])
+        else:
+            pubID = 'unknown'
+        existID = mp.contains(IDs, pubID)
+        if existID:
+            entry = mp.get(IDs, pubID)
+            ID_unico = me.getValue(entry)
+        else:
+            ID_unico = newID(pubID)
+            mp.put(IDs, pubID, ID_unico)
+        lt.addLast(ID_unico['artists'], artist)
+    except Exception:
+        return None
+
+def newID(pubID):
+    entry = {"id":'', 'artists':None}
+    entry['id'] = pubID
+    entry['artists'] = lt.newList('ARRAY_LIST')
+    return entry
+
+
+def addArtistYears(catalog, artist):
+
+    try:
+        years = catalog['years']
+        if (artist['BeginDate'] != ''):
+            pubyear = int((artist['BeginDate']))
+        else:
+            pubyear = 0
+        existyear = mp.contains(years, pubyear)
+        if existyear:
+            entry = mp.get(years, pubyear)
+            year = me.getValue(entry)
+        else:
+            year = newYear(pubyear)
+            print(pubyear)
+            mp.put(years, pubyear, year)
+        lt.addLast(year['artists'], artist)
+    except Exception:
+        return None
+
+
+def newYear(pubyear):
+    entry = {'year': "", 'artists':None}
+    entry['year'] = pubyear
+    entry['artists'] = lt.newList('ARRAY_LIST')
+    return entry
 
 def addArtworkMedium(catalog, artwork):
 
@@ -188,11 +258,21 @@ def getArtistsInDateRange (catalog, year1, year2):
     """"
     Retorna lista desordenada de artistas en un rango de años
     """
-    artists = catalog["artists"]
+    years_map = catalog['years']
+    years_keys = mp.keySet(years_map)
+
     artistsInRange= lt.newList(datastructure= "ARRAY_LIST")
-    for artist in lt.iterator(artists):
-        if int(artist["BeginDate"]) >= year1 and int(artist["BeginDate"]) <= year2:
-            lt.addLast(artistsInRange, artist)
+
+    for year in lt.iterator(years_keys):
+        entry = mp.get(years_map, year)
+        posyear = me.getValue(entry)
+        if posyear != None:
+            if int(posyear["year"]) >= year1 and int(posyear["year"]) <= year2:
+                artistInYear = posyear['artists']
+                print(posyear['year'])
+                for artist in lt.iterator(artistInYear):
+                    lt.addLast(artistsInRange, artist)
+
     return artistsInRange
 
 def getArtworksInDeparment(catalog, department):
@@ -301,19 +381,22 @@ def searchArtistByID(catalog, constituentids):
 
 def ArtistByID_v2(catalog, constituentids):
 
-    artists = catalog['artists']
+    ID_catalog = catalog['artistID']
     ID_list = constituentids.strip("[]").split(", ")
     result = lt.newList('ARRAY_LIST')
-    number_artists = len(ID_list)
-    corte = 0
-    for artist in lt.iterator(artists):
-        if artist['ConstituentID'] in ID_list:
-            lt.addLast(result,artist)
-            corte+=1
-        if corte == number_artists:
-            break
+
+    for item in ID_list:
+        existsID = mp.contains(ID_catalog, item)
+        if existsID:
+            entry = mp.get(ID_catalog, item)
+            info_artistas = me.getValue(entry)
+            lista_artistas = info_artistas['artists']
+
+            for artist in lt.iterator(lista_artistas):
+                lt.addLast(result, artist)
     
     return result
+
                 
 def getArtworksByTechnique(catalog, technique):
     artworks = catalog['artworks']
@@ -460,6 +543,24 @@ def compareMapMedium(id, tag):
         return 0
 
 def compareMapNationality(id, tag):
+    tagentry = me.getKey(tag)
+    if (id == tagentry):
+        return 0
+    elif (id > tagentry):
+        return 1
+    else:
+        return 0
+
+def compareMapYears(id, tag):
+    tagentry = me.getKey(tag)
+    if (int(id) == int(tagentry)):
+        return 0
+    elif (int(id) > int(tagentry)):
+        return 1
+    else:
+        return 0
+
+def compareMapIDs(id, tag):
     tagentry = me.getKey(tag)
     if (id == tagentry):
         return 0
