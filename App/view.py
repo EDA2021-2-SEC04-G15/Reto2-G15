@@ -86,7 +86,7 @@ def printArtworksSortResults(ord_artworks):
 
         for num in range(0,cantidad_artistas):
             artista = lt.getElement(artistas, num + 1)
-            print(str(artista))
+            print(str(artista['DisplayName']))
         
         print('\nFecha: ' + artwork['Date'] +
            ', Fecha adquisición: ' + artwork['DateAcquired'] +
@@ -109,7 +109,7 @@ def printArtworksSortResults(ord_artworks):
 
         for num in range(0,cantidad_artistas):
             artista = lt.getElement(artistas, num + 1)
-            print(str(artista))
+            print(str(artista['DisplayName']))
         
         print('\nFecha: ' + artwork['Date'] +
            ', Fecha adquisición: ' + artwork['DateAcquired'] +

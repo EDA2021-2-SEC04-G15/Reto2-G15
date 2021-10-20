@@ -81,9 +81,8 @@ def sortArtistsByBeginDate(catalog, year1, year2):
 def sortArtworksByBeginDate(catalog, year1, year2):
     
     artworksInRange = model.getArtworksInDateRange(catalog, year1, year2)
-    purchasedAmount = model.purchasedAmount(artworksInRange)
-    sortedResult = model.sortArtworks(artworksInRange)
-    return sortedResult,purchasedAmount
+    sortedResult = model.sortArtworks(artworksInRange[0])
+    return sortedResult,artworksInRange[1]
     
 
 def sortCountries(catalog):
@@ -107,7 +106,7 @@ def sortArtworksByTechnique(catalog, technique):
 # Funciones de consulta sobre el catálogo
 
 def searchArtistByID(catalog, constituentids):
-    return model.searchArtistByID(catalog, constituentids)
+    return model.ArtistByID_v2(catalog, constituentids)
 
 def getArtworksByMedium(catalog, medio):
 

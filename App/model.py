@@ -80,7 +80,12 @@ def newCatalog():
                                  loadfactor=0.5,
                                  comparefunction=compareMapYears)
 
-    catalog['artistID'] = mp.newMap(2000,
+    catalog['dates'] = mp.newMap(100000,
+                                 maptype='CHAINING',
+                                 loadfactor=4.0,
+                                 comparefunction=compareMapDatess)
+
+    catalog['artistID'] = mp.newMap(10000,
                                  maptype='PROBING',
                                  loadfactor=0.5,
                                  comparefunction=compareMapIDs)
@@ -103,12 +108,49 @@ def addArtwork(catalog, artwork):
     # Se agrega una obra a la lista de obras
     lt.addLast(catalog['artworks'], artwork)
 
+    # se añade la información de la obra al MAPA de dates
+
+    addArtworkDates(catalog, artwork)
+
     # se añaden los detalles de la obra al MAPA de nacionalidades
     addArtworkNationlities(catalog, artwork)
     
     # se añade la informacion al mapa de mediums
 
     addArtworkMedium(catalog, artwork)
+
+def addArtworkDates(catalog, artwork):
+
+    try:
+        dates = catalog['dates']
+        if (artwork['DateAcquired'] != ''):
+            pubDate = (artwork['DateAcquired'])
+        else:
+            pubDate = ""
+        existDate = mp.contains(dates, pubDate)
+        if existDate:
+            entry = mp.get(dates, pubDate)
+            Date = me.getValue(entry)
+        else:
+            Date = newDate(pubDate)
+            mp.put(dates, pubDate, Date)
+        lt.addLast(Date['artworks'], artwork)
+        posible = artwork["CreditLine"].lower()
+        t = "purchase"
+        if t in posible:
+           Date['purchased'] += 1
+    except Exception:
+        return None
+
+    pass
+
+def newDate(pubDate):
+    entry = {"date":'', 'artworks':None, 'purchased':0}
+    entry['date'] = pubDate
+    entry['artworks'] = lt.newList('ARRAY_LIST')
+    
+    return entry
+
 
 def addArtistID(catalog, artist):
 
@@ -150,7 +192,6 @@ def addArtistYears(catalog, artist):
             year = me.getValue(entry)
         else:
             year = newYear(pubyear)
-            print(pubyear)
             mp.put(years, pubyear, year)
         lt.addLast(year['artists'], artist)
     except Exception:
@@ -269,7 +310,6 @@ def getArtistsInDateRange (catalog, year1, year2):
         if posyear != None:
             if int(posyear["year"]) >= year1 and int(posyear["year"]) <= year2:
                 artistInYear = posyear['artists']
-                print(posyear['year'])
                 for artist in lt.iterator(artistInYear):
                     lt.addLast(artistsInRange, artist)
 
@@ -343,41 +383,29 @@ def getTansportCost(artwork):
 
     return costo_final
 
-def getArtworksInDateRange (catalog, year1, year2):
+def getArtworksInDateRange (catalog, date1, date2):
     """"
     Retorna lista desordenada de artworks en un rango de fechas utilizando el comparador cmpArtwork
     """
-    artworks = catalog["artworks"]
+
+    dates_map = catalog['dates']
+    dates_keys = mp.keySet(dates_map)
+    purchasedAmount = 0
     artworksInRange= lt.newList(datastructure= "ARRAY_LIST")
-    for artwork in lt.iterator(artworks):
-        if (cmpArtworkByDateAcquired(artwork,year2)) and not (cmpArtworkByDateAcquired(artwork, year1)):
-            lt.addLast(artworksInRange, artwork)
-    return artworksInRange
 
-def purchasedAmount (artworksInRange):
+    for date in lt.iterator(dates_keys):
+        entry = mp.get(dates_map, date)
+        posDate = me.getValue(entry)
+        if posDate != None:
+            if (cmpArtworkByDateAcquired(posDate['date'],date2)) and not (cmpArtworkByDateAcquired(posDate['date'], date1)):
+                purchasedAmount += posDate['purchased']
+                artistsInDate = posDate['artworks']
+                for artwork in lt.iterator(artistsInDate):
+                    lt.addLast(artworksInRange, artwork)
 
-    k = 0
-    t = "purchase"
-    for artwork in lt.iterator(artworksInRange):
-       posible = artwork["CreditLine"].lower()
-       if t in posible:
-           k+=1
-    return k
+    return artworksInRange, purchasedAmount
 
-def searchArtistByID(catalog, constituentids):
 
-    artists = catalog['artists']
-    ID_list = constituentids.strip("[]").split(", ")
-    artists_names=lt.newList('ARRAY_LIST')
-    for id in ID_list:
-        corte = 0
-        while corte == 0:
-            for artist in lt.iterator(artists):
-                if artist["ConstituentID"] == id:
-                    lt.addLast(artists_names,artist['DisplayName'])
-                    corte = 1
-
-    return artists_names
 
 def ArtistByID_v2(catalog, constituentids):
 
@@ -443,8 +471,11 @@ def cmpArtworkByDateAcquired(artwork1 , artwork2):
 
                 ### Devuelve True si el 'DateAcquired' de 
                 # artwork1 es menor que el de artwork2
+    try:
+        date1 = artwork1['DateAcquired'].split('-')
+    except:
+        date1 = artwork1.split('-')
 
-    date1 = artwork1['DateAcquired'].split('-')
     date2 = artwork2['DateAcquired'].split('-')
 
     if date1 == [""]:
@@ -561,6 +592,15 @@ def compareMapYears(id, tag):
         return 0
 
 def compareMapIDs(id, tag):
+    tagentry = me.getKey(tag)
+    if (id == tagentry):
+        return 0
+    elif (id > tagentry):
+        return 1
+    else:
+        return 0
+
+def compareMapDatess(id, tag):
     tagentry = me.getKey(tag)
     if (id == tagentry):
         return 0
