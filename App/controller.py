@@ -87,8 +87,7 @@ def sortArtworksByBeginDate(catalog, year1, year2):
 
 def sortCountries(catalog):
 
-    countries = catalog['nationalities']
-    sortedResult = model.sortCountries(countries)
+    sortedResult = model.getArtworksByNationality(catalog)
     return sortedResult
 
 def sortArtworksByDeparment(catalog, department):

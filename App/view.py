@@ -154,12 +154,12 @@ def printCountriesSortResult(ord_countries):
     print("\nLos 10 paises con mas obras en el MoMa son: ")
 
     for nationality in lt.iterator(ord_countries):
-        print("\n" + nationality['name'] + " : " + str(nationality['size']))
+        print("\n" + nationality['nationality'] + " : " + str(nationality['artwork_number']))
 
     pais = lt.getElement(ord_countries, 1)
-    print("las primeras y utlimas 3 obras de la lista de obras nacionalidad: " + pais["name"]+ ", son: ")
+    print("las primeras y utlimas 3 obras de la lista de obras nacionalidad: " + pais["nationality"]+ ", son: ")
     obras = pais['artworks']
-    size = pais['size']
+    size = pais['artwork_number']
     for pos in [1,2,3,size-2,size-1,size]:
         obra = lt.getElement(obras, pos)
         constituents = obra["ConstituentID"]
@@ -170,12 +170,14 @@ def printCountriesSortResult(ord_countries):
 
         for num in range(0,cantidad_artistas):
             artista = lt.getElement(artistas, num + 1)
-            print(str(artista))
+            print(str(artista['DisplayName']))
         
         print('\nFecha: ' + obra['Date'] +
            ', Fecha adquisición: ' + obra['DateAcquired'] +
             ', Medio: ' + obra['Medium'] +
             ' , Dimensiones: ' + obra['Dimensions'] )
+            
+
 
 def printSortedDateResult(sorted_date):
     print("\n Las 5 obras mas antiguas a transportar son: ")
@@ -193,7 +195,7 @@ def printSortedDateResult(sorted_date):
 
         for num in range(0,cantidad_artistas):
             artista = lt.getElement(artistas, num + 1)
-            print(str(artista))
+            print(str(artista['DisplayName']))
         
         print('\nFecha: ' + artwork['Date'] +
             ', Medio: ' + artwork['Medium'] +
@@ -218,7 +220,7 @@ def printSortedCostResult(sorted_cost):
 
         for num in range(0,cantidad_artistas):
             artista = lt.getElement(artistas, num + 1)
-            print(str(artista))
+            print(str(artista['DisplayName']))
         
         print('\nFecha: ' + artwork['Date'] +
             ', Medio: ' + artwork['Medium'] +
@@ -325,10 +327,10 @@ while True:
 
     elif int(inputs[0]) == 5:
         
-        size = lt.size(catalog['nationalities'])
+        size = lt.size(catalog['artworks'])
 
         result = controller.sortCountries(catalog)
-        print("\n Para una muestra de", size, "paises, el tiempo (mseg) es: ", str(result[0]))
+        print("\n Para una muestra de", size, "obras, el tiempo (mseg) es: ", str(result[0]))
         printCountriesSortResult(result[1])
 
     elif int(inputs[0]) == 6:

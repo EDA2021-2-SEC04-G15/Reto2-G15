@@ -70,25 +70,30 @@ def newCatalog():
                                  loadfactor=0.5,
                                  comparefunction=compareMapMedium)
 
-    catalog['nationality'] = mp.newMap(100,
+    catalog['nationalities'] = mp.newMap(5000,
                                  maptype='PROBING',
                                  loadfactor=0.5,
                                  comparefunction=compareMapNationality)
 
-    catalog['years'] = mp.newMap(2500,
+    catalog['years'] = mp.newMap(5000,
                                  maptype='PROBING',
                                  loadfactor=0.5,
                                  comparefunction=compareMapYears)
 
-    catalog['dates'] = mp.newMap(100000,
+    catalog['dates'] = mp.newMap(500000,
                                  maptype='CHAINING',
                                  loadfactor=4.0,
                                  comparefunction=compareMapDatess)
 
-    catalog['artistID'] = mp.newMap(10000,
+    catalog['artistID'] = mp.newMap(100000,
                                  maptype='PROBING',
                                  loadfactor=0.5,
                                  comparefunction=compareMapIDs)
+
+    catalog['departments'] = mp.newMap(500,
+                                 maptype='PROBING',
+                                 loadfactor=0.5,
+                                 comparefunction=compareMapDepartments)
 
     return catalog
 
@@ -114,10 +119,43 @@ def addArtwork(catalog, artwork):
 
     # se añaden los detalles de la obra al MAPA de nacionalidades
     addArtworkNationlities(catalog, artwork)
+
+    # se añaden los detalles de la obra al MAPA de departamentos
+
+    addArtworkDepartment(catalog, artwork)
     
     # se añade la informacion al mapa de mediums
 
     addArtworkMedium(catalog, artwork)
+
+def addArtworkDepartment(catalog, artwork):
+
+    try:
+        departments = catalog['departments']
+        if (artwork['Department'] != ''):
+            pubDepartment = (artwork['Department'])
+        else:
+            pubDepartment = "unknown"
+        existDepartment = mp.contains(departments, pubDepartment)
+        if existDepartment:
+            entry = mp.get(departments, pubDepartment)
+            Department = me.getValue(entry)
+        else:
+            Department = newDepartment(pubDepartment)
+            mp.put(departments, pubDepartment, Department)
+        lt.addLast(Department['artworks'], artwork)
+        Department['total_artworks']+=1
+    except Exception:
+        return None
+
+
+
+def newDepartment(pubDepartment):
+
+    entry = {"department":'', 'artworks':None, 'total_artworks':0}
+    entry['department'] = pubDepartment
+    entry['artworks'] = lt.newList('ARRAY_LIST')
+    return entry
 
 def addArtworkDates(catalog, artwork):
 
@@ -142,7 +180,6 @@ def addArtworkDates(catalog, artwork):
     except Exception:
         return None
 
-    pass
 
 def newDate(pubDate):
     entry = {"date":'', 'artworks':None, 'purchased':0}
@@ -246,11 +283,11 @@ def addArtworkNationlities(catalog, artwork):
 
 def addNationality(catalog, artwork, artist):
     try:
-        nationalities = catalog['nationality']
+        nationalities = catalog['nationalities']
         if (artist['Nationality'] != ''):
             pubnationality = (artist['Nationality'])
         else:
-            pubnationality = 'unknown'
+            pubnationality = 'Nationality unknown'
         existnationality = mp.contains(nationalities, pubnationality)
         if existnationality:
             entry = mp.get(nationalities, pubnationality)
@@ -259,6 +296,7 @@ def addNationality(catalog, artwork, artist):
             nationality = newNationlity(pubnationality)
             mp.put(nationalities, pubnationality, nationality)
         lt.addLast(nationality['artworks'], artwork)
+        nationality['artwork_number']+=1
     except Exception:
         return None
 
@@ -267,7 +305,7 @@ def newNationlity(pubnationality):
     """
     Crea una nueva estructura para almacenar las obras de una nacionalidad
     """
-    entry ={'nationality':'', 'artworks':None}
+    entry ={'nationality':'', 'artworks':None, 'artwork_number':0}
     entry['nationality'] = pubnationality
     entry['artworks'] = lt.newList('ARRAY_LIST')
     return entry
@@ -285,14 +323,21 @@ def getArtworksByMedium(catalog, medium):
         return me.getValue(medium)['artworks']
     return None
 
-def getArtworksByNationality(catalog, nationality):
+def getArtworksByNationality(catalog):
 
-    nationality = mp.get(catalog['nationality'], nationality)
-    if nationality:
-        artworks = me.getValue(nationality)['artworks']
-        size = lt.size(artworks)
-        return size
-    return None
+    nationalities_map = catalog['nationalities']
+    nationalities_keys = mp.keySet(nationalities_map)
+    nationalities_list= lt.newList(datastructure= "ARRAY_LIST")
+
+    for nationality in lt.iterator(nationalities_keys):
+        entry = mp.get(nationalities_map, nationality)
+        posNationality = me.getValue(entry)
+        if posNationality != None:
+            lt.addLast(nationalities_list, posNationality)
+    
+    result = sortCountries(nationalities_list)
+    return result
+
 
 
 def getArtistsInDateRange (catalog, year1, year2):
@@ -321,23 +366,25 @@ def getArtworksInDeparment(catalog, department):
     Agrega el costo de transporte a una nueva categoria dentro del artwork
     Retorna costo total, numero de obras, y peso estimado
     """
-    artworks = catalog['artworks']
-    artworksInDept = lt.newList(datastructure="ARRAY_LIST")
+
+    departments_map = catalog['departments']
+    existDepartment = mp.contains(departments_map, department)
+    if existDepartment:
+        entry = mp.get(departments_map, department)
+        posDepartment = me.getValue(entry)
+    artworksInDept = posDepartment['artworks']
     costo_total = 0
     peso_total = 0
-    obras = 0
-    for artwork in lt.iterator(artworks):
-        if artwork['Department'] == department:
-            lt.addLast(artworksInDept,artwork)
-            artwork['cost'] = getTansportCost(artwork)
-            costo = artwork['cost']
-            costo_total += costo
-            try:
-                peso = float(artwork['Weight (kg)'])
-            except:
-                peso = 0
-            peso_total+= peso
-            obras+=1
+    obras = posDepartment['total_artworks']
+    for artwork in lt.iterator(artworksInDept):
+        artwork['cost'] = getTansportCost(artwork)
+        costo = artwork['cost']
+        costo_total += costo
+        try:
+            peso = float(artwork['Weight (kg)'])
+        except:
+            peso = 0
+        peso_total+= peso
 
     costo_total = costo_total.__round__(2)
     peso_total = peso_total.__round__(2)
@@ -459,7 +506,7 @@ def cmpArtworkByDate(artwork1, artwork2):
 
 def cmpCountryByArtworksStored(country1, country2):
 
-    result = country1['size'] > country2['size']
+    result = country1['artwork_number'] > country2['artwork_number']
     return result
 
 def cmpArtistsByBeginDate (artist1, artist2):
@@ -601,6 +648,15 @@ def compareMapIDs(id, tag):
         return 0
 
 def compareMapDatess(id, tag):
+    tagentry = me.getKey(tag)
+    if (id == tagentry):
+        return 0
+    elif (id > tagentry):
+        return 1
+    else:
+        return 0
+
+def compareMapDepartments(id, tag):
     tagentry = me.getKey(tag)
     if (id == tagentry):
         return 0
