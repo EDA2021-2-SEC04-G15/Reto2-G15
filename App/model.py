@@ -50,8 +50,10 @@ def newCatalog():
     """
     catalog = {'artists': None,
                'artworks': None,
+               'dates': None,
                'artistID':None,
                'years':None,
+               'departments' :None,
                'nationalities': None,
                'tecnicas' : None}
 
@@ -80,7 +82,7 @@ def newCatalog():
                                  loadfactor=0.5,
                                  comparefunction=compareMapYears)
 
-    catalog['dates'] = mp.newMap(500000,
+    catalog['dates'] = mp.newMap(5000,
                                  maptype='CHAINING',
                                  loadfactor=4.0,
                                  comparefunction=compareMapDatess)
