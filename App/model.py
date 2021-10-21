@@ -338,6 +338,21 @@ def getArtworksByNationality(catalog):
     result = sortCountries(nationalities_list)
     return result
 
+def getArtworksByTechnique(catalog):
+    techniqueMap = catalog['tecnicas']
+    techniqueKeys = mp.keySet(techniqueMap)
+    techniqueList = lt.newList(datastructure= "ARRAY_LIST")
+
+    for tecnica in lt.iterator(techniqueKeys):
+       entry = mp.get(techniqueMap, tecnica)
+       pTecnica = me.getValue(entry)
+       if pTecnica != None:
+           lt.addLast(techniqueList, pTecnica) 
+
+    result = sortArtworksByTechnique(techniqueList)
+    return result   
+
+       
 
 
 def getArtistsInDateRange (catalog, year1, year2):
@@ -392,6 +407,9 @@ def getArtworksInDeparment(catalog, department):
     return artworksInDept, obras, costo_total, peso_total
 
 
+
+
+    
 def getTansportCost(artwork):
     weight = artwork['Weight (kg)']
     width = artwork['Width (cm)']
@@ -473,11 +491,8 @@ def ArtistByID_v2(catalog, constituentids):
     return result
 
                 
-def getArtworksByTechnique(catalog, technique):
-    artworks = catalog['artworks']
-    techniqueList = technique.strip("[]").split(", ")
-    artworksNames = lt.newList('ARRAY_LIST')
-    numberArtworks = len(techniqueList)
+
+
     
  
 
@@ -604,8 +619,7 @@ def sortArtworksByTechnique(artworksByTech):
     sorted_list = ms.sort(sub_list, cmpArtworksByTechnique)
     stop_time = time.process_time()
     elapsed_time_mseg = (stop_time - start_time)*1000
-    top10sorted = lt.subList(sorted_list, 1, 10)
-    return elapsed_time_mseg, top10sorted
+    return elapsed_time_mseg, sorted_list
 
 
 #### funciones comparación mapas ############

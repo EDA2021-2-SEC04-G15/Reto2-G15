@@ -230,7 +230,7 @@ def printSortedCostResult(sorted_cost):
 
 catalog = None
 
-def printArworksByTechniqueResult(ordArtworks):
+def printArtworksByTechniqueResult(ordArtworks):
     print("Las obras que se han realizado con esta tecnica son: ")
 
     listaObras = ordArtworks[1]
@@ -240,7 +240,7 @@ def printArworksByTechniqueResult(ordArtworks):
     cantidadArtistas = lt.size(obras)
     for num in range (0,cantidadArtistas):
         obra = lt.getElement(obras, num)
-        print(str(obras))
+        print(str(obra))
 
 
     print (' Medio: ' + artwork['Medium'] +
@@ -320,7 +320,7 @@ while True:
         print("\nEl total de obras de este artista son: " + str(result[1]))
         print("\nEl total de tecnicas utilizadas han sido: " + str(result[2]))
         print("\nLa tecnica más utilizada ha sido: " + str(result[3]))
-        printArworksByTechniqueResult(result[4])
+        printArtworksByTechniqueResult(result[4])
 
 
         
