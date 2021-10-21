@@ -295,10 +295,15 @@ while True:
         fecha1 = int(input('Año inicial de busqueda: '))
         fecha2 = int(input('Año final de busqueda: '))
         size = lt.size(catalog['artists'])
-
+        start_time = time.process_time()
         result = controller.sortArtistsByBeginDate(catalog, fecha1, fecha2)
+
         print("\nPara la muestra de", size, " artistas, el tiempo (mseg) es: ", str(result[0]))
         printArtistSortResults(result[1])
+
+        stop_time = time.process_time()
+        elapsed_time_mseg = (stop_time - start_time)*1000
+        print ("\ntiempo: "+ str(elapsed_time_mseg))
 
     elif int(inputs[0]) == 3:
 
@@ -307,35 +312,45 @@ while True:
         fecha2 = input('Fecha final de busqueda (AAAA-MM-DD): ')
         est_fecha2 = {'DateAcquired': fecha2}
         size = lt.size(catalog['artworks'])
-
+        start_time = time.process_time()
         result = controller.sortArtworksByBeginDate(catalog, est_fecha1, est_fecha2)
         print("\nPara la muestra de", size, " obras, el tiempo (mseg) es: ", str(result[0][0]))
         print("\nSe encontraron " + str(result[1]) + " obras compradas en el rango")
         printArtworksSortResults(result[0][1])
 
+        stop_time = time.process_time()
+        elapsed_time_mseg = (stop_time - start_time)*1000
+        print ("\ntiempo: "+ str(elapsed_time_mseg))
+
     elif int(inputs[0]) == 4:
         nombre_artista = input("Nombre del artista: ")
         size = lt.size(catalog['artists'])
+        
         result = controller.sortArtworksByTechnique(catalog)
         print("\nEl total de obras de este artista son: " + str(result[1]))
         print("\nEl total de tecnicas utilizadas han sido: " + str(result[2]))
         print("\nLa tecnica más utilizada ha sido: " + str(result[3]))
         printArtworksByTechniqueResult(result[4])
 
-
+        
         
 
     elif int(inputs[0]) == 5:
         
         size = lt.size(catalog['artworks'])
-
+        start_time = time.process_time()
         result = controller.sortCountries(catalog)
         print("\n Para una muestra de", size, "obras, el tiempo (mseg) es: ", str(result[0]))
         printCountriesSortResult(result[1])
 
+        stop_time = time.process_time()
+        elapsed_time_mseg = (stop_time - start_time)*1000
+        print ("\ntiempo: "+ str(elapsed_time_mseg))
+
     elif int(inputs[0]) == 6:
 
         departament = input("Departamento: ")
+        start_time = time.process_time()
         result = controller.sortArtworksByDeparment(catalog, departament)
         result_totales = result[0]
         sorted_date = result[1]
@@ -346,6 +361,10 @@ while True:
         print("Se estima que el peso total de artefactos es de: " + str(result_totales[3]) + " KG")
         printSortedDateResult(sorted_date)
         printSortedCostResult(sorted_cost)
+
+        stop_time = time.process_time()
+        elapsed_time_mseg = (stop_time - start_time)*1000
+        print ("\ntiempo: "+ str(elapsed_time_mseg))
     
     elif int(inputs[0]) == 7:
         a_inicial = input("Año inicial de las obras: ")
